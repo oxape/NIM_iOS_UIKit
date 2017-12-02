@@ -27,7 +27,7 @@
 - (NSInteger)indexAtModelArray:(NIMMessageModel*)model;
 
 //复位消息
-- (void)resetMessages:(void(^)(NSError *error)) handler;
+- (void)resetMessages:(NIMKitDataProvideHandler) handler;
 
 //数据对外接口
 - (void)loadHistoryMessagesWithComplete:(void(^)(NSInteger index , NSArray *messages ,NSError *error))handler;

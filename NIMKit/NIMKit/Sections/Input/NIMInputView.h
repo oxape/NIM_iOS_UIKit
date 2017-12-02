@@ -10,9 +10,11 @@
 #import "NIMInputProtocol.h"
 #import "NIMSessionConfig.h"
 #import "NIMInputToolBar.h"
+#import "NIMInputAtCache.h"
 
 @class NIMInputMoreContainerView;
 @class NIMInputEmoticonContainerView;
+@class NIMInputVoiceContainerView;
 
 
 
@@ -26,9 +28,10 @@ typedef NS_ENUM(NSInteger, NIMAudioRecordPhase) {
 typedef NS_ENUM(NSInteger,NIMInputStatus)
 {
     NIMInputStatusText,
-    NIMInputStatusAudio,
     NIMInputStatusEmoticon,
-    NIMInputStatusMore
+    NIMInputStatusMore,
+    NIMInputStatusVoice,
+    NIMInputStatusDown,
 };
 
 
@@ -46,6 +49,8 @@ typedef NS_ENUM(NSInteger,NIMInputStatus)
 
 @interface NIMInputView : UIView
 
+@property (nonatomic, strong) NIMInputAtCache *atCache;
+
 @property (nonatomic, strong) NIMSession             *session;
 
 @property (nonatomic, assign) NSInteger              maxTextLength;
@@ -53,8 +58,9 @@ typedef NS_ENUM(NSInteger,NIMInputStatus)
 @property (assign, nonatomic, getter=isRecording)    BOOL recording;
 
 @property (strong, nonatomic)  NIMInputToolBar *toolBar;
-@property (strong, nonatomic)  NIMInputMoreContainerView *moreContainer;
+@property (strong, nonatomic) NIMInputMoreContainerView *moreContainer;
 @property (strong, nonatomic)  NIMInputEmoticonContainerView *emoticonContainer;
+@property (strong, nonatomic)  NIMInputVoiceContainerView *voiceContainer;
 
 - (instancetype)initWithFrame:(CGRect)frame
                        config:(id<NIMSessionConfig>)config;

@@ -15,6 +15,7 @@
 #import "UIView+NIM.h"
 #import "NIMKit.h"
 #import "UIView+Toast.h"
+#import "Masonry.h"
 
 @interface NIMContactSelectViewController ()<UITableViewDataSource, UITableViewDelegate, NIMContactPickedViewDelegate>{
     NSMutableArray *_selectecContacts;
@@ -65,13 +66,23 @@
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(onCancelBtnClick:)];
     self.selectIndicatorView.pickedView.delegate = self;
     [self.selectIndicatorView.doneButton addTarget:self action:@selector(onDoneBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.view);
+        make.left.right.equalTo(self.view);
+    }];
+    
+    [self.selectIndicatorView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.right.equalTo(self.view);
+        make.top.equalTo(self.tableView.mas_bottom);
+        make.height.mas_equalTo(0);
+        make.bottom.equalTo(self.view);
+    }];
+    self.selectIndicatorView.hidden = YES;
 }
 
 - (void)viewDidLayoutSubviews{
     [super viewDidLayoutSubviews];
-    self.selectIndicatorView.nim_width = self.view.nim_width;
-    self.tableView.nim_height = self.view.nim_height - self.selectIndicatorView.nim_height;
-    self.selectIndicatorView.nim_bottom = self.view.nim_height;
 }
 
 - (void)show{
@@ -301,6 +312,8 @@
         [self.selectIndicatorView.pickedView addMemberInfo:info];
     }
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    [self onDoneBtnClick:nil];
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - ContactPickedViewDelegate

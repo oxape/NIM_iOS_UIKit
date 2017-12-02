@@ -34,26 +34,34 @@
         [self setBackgroundColor:[UIColor whiteColor]];
         
         _voiceBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_voiceBtn setImage:[UIImage nim_imageInKit:@"icon_toolview_voice_normal"] forState:UIControlStateNormal];
-        [_voiceBtn setImage:[UIImage nim_imageInKit:@"icon_toolview_voice_pressed"] forState:UIControlStateHighlighted];
+        [_voiceBtn setImage:[UIImage imageNamed:@"session-voice-media"] forState:UIControlStateNormal];
+        [_voiceBtn setImage:[UIImage imageNamed:@"session-voice-media"] forState:UIControlStateHighlighted];
+        [_voiceBtn setContentEdgeInsets:UIEdgeInsetsMake(8, 16, 8, 16)];
         [_voiceBtn sizeToFit];
         
-        
         _emoticonBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_emoticonBtn setImage:[UIImage nim_imageInKit:@"icon_toolview_emotion_normal"] forState:UIControlStateNormal];
-        [_emoticonBtn setImage:[UIImage nim_imageInKit:@"icon_toolview_emotion_pressed"] forState:UIControlStateHighlighted];
+        [_emoticonBtn setImage:[UIImage imageNamed:@"session-emoji-media"] forState:UIControlStateNormal];
+        [_emoticonBtn setImage:[UIImage imageNamed:@"session-emoji-media"] forState:UIControlStateHighlighted];
+        [_emoticonBtn setContentEdgeInsets:UIEdgeInsetsMake(8, 16, 8, 16)];
         [_emoticonBtn sizeToFit];
         
-        _moreMediaBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_moreMediaBtn setImage:[UIImage nim_imageInKit:@"icon_toolview_add_normal"] forState:UIControlStateNormal];
-        [_moreMediaBtn setImage:[UIImage nim_imageInKit:@"icon_toolview_add_pressed"] forState:UIControlStateHighlighted];
-        [_moreMediaBtn sizeToFit];
+        _photoBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_photoBtn setImage:[UIImage imageNamed:@"session-photo-media"] forState:UIControlStateNormal];
+        [_photoBtn setImage:[UIImage imageNamed:@"session-photo-media"] forState:UIControlStateHighlighted];
+        [_photoBtn setContentEdgeInsets:UIEdgeInsetsMake(8, 16, 8, 16)];
+        [_photoBtn sizeToFit];
         
-        _recordButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_recordButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        [_recordButton.titleLabel setFont:[UIFont systemFontOfSize:14.f]];
-        [_recordButton setBackgroundImage:[[UIImage nim_imageInKit:@"icon_input_text_bg"] resizableImageWithCapInsets:UIEdgeInsetsMake(15,80,15,80) resizingMode:UIImageResizingModeStretch] forState:UIControlStateNormal];
-        [_recordButton sizeToFit];
+        _voteBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_voteBtn setImage:[UIImage imageNamed:@"session-vote-media"] forState:UIControlStateNormal];
+        [_voteBtn setImage:[UIImage imageNamed:@"session-vote-media"] forState:UIControlStateHighlighted];
+        [_voteBtn setContentEdgeInsets:UIEdgeInsetsMake(8, 16, 8, 16)];
+        [_voteBtn sizeToFit];
+        
+        _shotBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_shotBtn setImage:[UIImage imageNamed:@"session-shot-media"] forState:UIControlStateNormal];
+        [_shotBtn setImage:[UIImage imageNamed:@"session-shot-media"] forState:UIControlStateHighlighted];
+        [_shotBtn setContentEdgeInsets:UIEdgeInsetsMake(8, 16, 8, 16)];
+        [_shotBtn sizeToFit];
         
         _inputTextBkgImage = [[UIImageView alloc] initWithFrame:CGRectZero];
         [_inputTextBkgImage setImage:[[UIImage nim_imageInKit:@"icon_input_text_bg"] resizableImageWithCapInsets:UIEdgeInsetsMake(15,80,15,80) resizingMode:UIImageResizingModeStretch]];
@@ -72,11 +80,12 @@
         _sep.backgroundColor = [UIColor lightGrayColor];
         [self addSubview:_sep];
         
-        self.types = @[
-                         @(NIMInputBarItemTypeVoice),
-                         @(NIMInputBarItemTypeTextAndRecord),
-                         @(NIMInputBarItemTypeEmoticon),
-                         @(NIMInputBarItemTypeMore),
+        self.types = @[@(NIMInputBarItemTypeTextAndRecord),
+                       @(NIMInputBarItemTypeVoice),
+                       @(NIMInputBarItemTypeEmoticon),
+                       @(NIMInputBarItemTypePhoto),
+                       @(NIMInputBarItemTypeVote),
+                       @(NIMInputBarItemTypeShot),
                        ];
     }
     return self;
@@ -108,17 +117,27 @@
 - (CGSize)sizeThatFits:(CGSize)size
 {
     CGFloat viewHeight = 0.0f;
-    if (self.inputType == InputTypeAudio) {
-        viewHeight = 54.5;
-    }else{
+    
+    if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
         //算出 TextView 的宽度
         [self adjustTextViewWidth:size.width];
         // TextView 自适应高度
         [self.inputTextView layoutIfNeeded];
         viewHeight = self.inputTextView.frame.size.height;
         //得到 ToolBar 自身高度
-        viewHeight = viewHeight + 2 * self.spacing + 2 * self.textViewPadding;
+        viewHeight = viewHeight + 2 * self.textViewPadding;
     }
+    CGFloat maxHeight = 0;
+    for (NSNumber *type in self.types) {
+        if ([type isEqualToNumber:@(NIMInputBarItemTypeTextAndRecord)]) {
+            continue;
+        }
+        UIView *view  = [self subViewForType:type.integerValue];
+        if (maxHeight < view.nim_height) {
+            maxHeight = view.nim_height;
+        }
+    }
+    viewHeight += 2 * self.spacing + maxHeight + (maxHeight > 0?self.spacing:0);
     
     return CGSizeMake(size.width,viewHeight);
 }
@@ -126,32 +145,61 @@
 - (void)adjustTextViewWidth:(CGFloat)width
 {
     CGFloat textViewWidth = 0;
-    for (NSNumber *type in self.types) {
-        if (type.integerValue == NIMInputBarItemTypeTextAndRecord) {
-            continue;
-        }
-        UIView *view = [self subViewForType:type.integerValue];
-        textViewWidth += view.nim_width;
-    }
-    textViewWidth += (self.spacing * (self.types.count + 1));
+    textViewWidth += (self.spacing * 2);
     self.inputTextView.nim_width  = width  - textViewWidth - 2 * self.textViewPadding;
 }
-
 
 - (void)layoutSubviews{
     [super layoutSubviews];
     
+    CGFloat bottom = self.spacing;
     if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
+        //算出 TextView 的宽度
         self.inputTextBkgImage.nim_width  = self.inputTextView.nim_width  + 2 * self.textViewPadding;
         self.inputTextBkgImage.nim_height = self.inputTextView.nim_height + 2 * self.textViewPadding;
+        self.inputTextBkgImage.nim_left = self.spacing;
+        self.inputTextBkgImage.nim_top = self.spacing;
     }
-    CGFloat left = 0;
+    
+    if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
+        self.inputTextBkgImage.nim_left = self.spacing;
+        self.inputTextBkgImage.nim_top = bottom;
+        bottom += self.inputTextBkgImage.nim_height + self.spacing;
+        [self addSubview:self.inputTextBkgImage];
+    }
+    
+    CGFloat centerX = -20;
+    CGFloat centerY = 0;
     for (NSNumber *type in self.types) {
+        if ([type isEqualToNumber:@(NIMInputBarItemTypeTextAndRecord)] || [type isEqualToNumber:@(NIMInputBarItemTypeShot)]) {
+            continue;
+        }
         UIView *view  = [self subViewForType:type.integerValue];
         [self addSubview:view];
-        view.nim_left = left + self.spacing;
-        view.nim_centerY = self.nim_height * .5f;
-        left = view.nim_right;
+        view.nim_top = bottom;
+        view.nim_centerX = centerX + 40;
+        centerX = view.nim_centerX;
+        if (centerY < view.nim_centerY) {
+            centerY = view.nim_centerY;
+        }
+    }
+    
+    if ([self.types containsObject:@(NIMInputBarItemTypeShot)]) {
+        UIView *view = [self subViewForType:NIMInputBarItemTypeShot];
+        [self addSubview:view];
+        view.nim_top = bottom;
+        view.nim_centerX = self.nim_width - 20;
+        if (centerY < view.nim_centerY) {
+            centerY = view.nim_centerY;
+        }
+    }
+    
+    for (NSNumber *type in self.types) {
+        if ([type isEqualToNumber:@(NIMInputBarItemTypeTextAndRecord)]) {
+            continue;
+        }
+        UIView *view  = [self subViewForType:type.integerValue];
+        view.nim_centerY = centerY;
     }
     
     [self adjustTextAndRecordView];
@@ -167,11 +215,7 @@
     if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
         //输入框
         self.inputTextView.center  = self.inputTextBkgImage.center;
-        //中间点击录音按钮
-        self.recordButton.frame    = self.inputTextBkgImage.frame;
-        
         [self addSubview:self.inputTextView];
-        [self addSubview:self.recordButton];
     }
 }
 
@@ -201,41 +245,31 @@
     
     if (inputType == InputTypeText || inputType == InputTypeMedia)
     {
-        [self.recordButton setHidden:YES];
         [self.inputTextView setHidden:NO];
         [self.inputTextBkgImage setHidden:NO];
-        [self updateVoiceBtnImages:YES];
-        [self updateEmotAndTextBtnImages:YES];
-    }
-    else if(inputType == InputTypeAudio)
-    {
-        [self.recordButton setHidden:NO];
-        [self.inputTextView setHidden:YES];
-        [self.inputTextBkgImage setHidden:YES];
-        [self updateVoiceBtnImages:NO];
-        [self updateEmotAndTextBtnImages:YES];
+//        [self updateVoiceBtnImages:YES];
+//        [self updateEmotAndTextBtnImages:YES];
     }
     else
     {
-        [self.recordButton setHidden:YES];
         [self.inputTextView setHidden:NO];
         [self.inputTextBkgImage setHidden:NO];
-        [self updateVoiceBtnImages:YES];
-        [self updateEmotAndTextBtnImages:YES];
+//        [self updateVoiceBtnImages:YES];
+//        [self updateEmotAndTextBtnImages:YES];
     }
 }
 
-- (void)updateVoiceBtnImages:(BOOL)selected
-{
-    [self.voiceBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_voice_normal"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_normal"] forState:UIControlStateNormal];
-    [self.voiceBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_voice_pressed"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_pressed"] forState:UIControlStateHighlighted];
-}
-
-- (void)updateEmotAndTextBtnImages:(BOOL)selected
-{
-    [self.emoticonBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_emotion_normal"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_normal"] forState:UIControlStateNormal];
-    [self.emoticonBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_emotion_pressed"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_pressed"] forState:UIControlStateHighlighted];
-}
+//- (void)updateVoiceBtnImages:(BOOL)selected
+//{
+//    [self.voiceBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_voice_normal"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_normal"] forState:UIControlStateNormal];
+//    [self.voiceBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_voice_pressed"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_pressed"] forState:UIControlStateHighlighted];
+//}
+//
+//- (void)updateEmotAndTextBtnImages:(BOOL)selected
+//{
+//    [self.emoticonBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_emotion_normal"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_normal"] forState:UIControlStateNormal];
+//    [self.emoticonBtn setImage:selected?[UIImage nim_imageInKit:@"icon_toolview_emotion_pressed"]:[UIImage nim_imageInKit:@"icon_toolview_keyboard_pressed"] forState:UIControlStateHighlighted];
+//}
 
 
 #pragma mark - NIMGrowingTextViewDelegate
@@ -297,8 +331,10 @@
                   @(NIMInputBarItemTypeVoice) : self.voiceBtn,
                   @(NIMInputBarItemTypeTextAndRecord)  : self.inputTextBkgImage,
                   @(NIMInputBarItemTypeEmoticon) : self.emoticonBtn,
-                  @(NIMInputBarItemTypeMore)     : self.moreMediaBtn
-                };
+                  @(NIMInputBarItemTypePhoto)    :self.photoBtn,
+                  @(NIMInputBarItemTypeVote)     :self.voteBtn,
+                  @(NIMInputBarItemTypeShot)     :self.shotBtn,
+                  };
     }
     return _dict[@(type)];
 }

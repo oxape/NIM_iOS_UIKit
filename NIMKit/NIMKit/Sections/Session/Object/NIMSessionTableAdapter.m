@@ -78,7 +78,8 @@
     }
     else if ([modelInArray isKindOfClass:[NIMTimestampModel class]])
     {
-        cellHeight = [modelInArray height];
+        NIMTimestampModel *timestampModel = (NIMTimestampModel *)modelInArray;
+        cellHeight = [timestampModel height];
     }
     else
     {

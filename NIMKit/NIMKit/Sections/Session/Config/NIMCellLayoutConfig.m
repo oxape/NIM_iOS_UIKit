@@ -72,14 +72,14 @@
     if (message.messageType == NIMMessageTypeNotification)
     {
         NIMNotificationType type = [(NIMNotificationObject *)message.messageObject notificationType];
-        if (type == NIMNotificationTypeTeam) {
+        if (type == NIMNotificationTypeTeam || type ==  NIMNotificationTypeChatroom) {
             return NO;
         }
     }
     if (message.messageType == NIMMessageTypeTip) {
         return NO;
     }
-    return (!message.isOutgoingMsg && message.session.sessionType == NIMSessionTypeTeam);
+    return (!message.isOutgoingMsg);
 }
 
 

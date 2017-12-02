@@ -13,6 +13,9 @@
 @protocol NIMInputActionDelegate <NSObject>
 
 @optional
+
+- (BOOL)inputViewShouldBeginEditing;
+
 - (BOOL)onTapMediaItem:(NIMMediaItem *)item;
 
 - (void)onTextChanged:(id)sender;

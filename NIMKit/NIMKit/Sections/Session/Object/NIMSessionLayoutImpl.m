@@ -84,7 +84,7 @@
     rect.origin.y = 0;
     rect.size.height = self.viewRect.size.height - _inputViewHeight;
     [_tableView setFrame:rect];
-    [_tableView nim_scrollToBottom:NO];
+//    [_tableView nim_scrollToBottom:NO];
 }
 
 #pragma mark - Notification
@@ -106,7 +106,7 @@
     if (!indexPaths.count) {
         return;
     }
-
+    __block NSInteger minRow = NSIntegerMax;
     NSMutableArray *addIndexPathes = [NSMutableArray array];
     [indexPaths enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [addIndexPathes addObject:[NSIndexPath indexPathForRow:[obj integerValue] inSection:0]];
@@ -114,9 +114,23 @@
     [self.tableView beginUpdates];
     [self.tableView insertRowsAtIndexPaths:addIndexPathes withRowAnimation:UITableViewRowAnimationNone];
     [self.tableView endUpdates];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.2f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.tableView nim_scrollToBottom:animated];
-    });
+    for (NSIndexPath *indexPath in addIndexPathes) {
+        if (minRow > indexPath.row) {
+            minRow = indexPath.row;
+        }
+    }
+    NSArray<NSIndexPath *> *visibleRows = [self.tableView indexPathsForVisibleRows];
+    NSInteger visibleMaxRow = 0;
+    for(NSIndexPath *indexPath in visibleRows) {
+        if (visibleMaxRow < indexPath.row) {
+            visibleMaxRow = indexPath.row;
+        }
+    }
+    if (visibleMaxRow+2 >= minRow) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.2f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.tableView nim_scrollToBottom:animated];
+        });
+    }
 }
 
 - (void)remove:(NSArray<NSIndexPath *> *)indexPaths

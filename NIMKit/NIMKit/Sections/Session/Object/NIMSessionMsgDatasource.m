@@ -48,10 +48,22 @@
 }
 
 
-- (void)resetMessages:(void(^)(NSError *error)) handler
+- (void)resetMessages:(NIMKitDataProvideHandler)handler
 {
     self.items              = [NSMutableArray array];
     self.msgIdDict         = [NSMutableDictionary dictionary];
+    if (_currentSession.sessionType == NIMSessionTypeTeam) {
+        NSArray<NIMMessage *> *messages = [[[NIMSDK sharedSDK] conversationManager] messagesInSession:_currentSession
+                                                                                              message:nil
+                                                                                                limit:_messageLimit];
+        NIMKit_Dispatch_Async_Main(^{
+            [self appendMessageModels:[self modelsWithMessages:messages]];
+            if (handler) {
+                handler(nil, nil);
+            }
+        });
+        return;
+    }
     if ([self.dataProvider respondsToSelector:@selector(pullDown:handler:)])
     {
         __weak typeof(self) wself = self;
@@ -59,7 +71,7 @@
             NIMKit_Dispatch_Async_Main(^{
                 [wself appendMessageModels:[self modelsWithMessages:messages]];
                 if (handler) {
-                    handler(error);
+                    handler(error, messages);
                 }
             });
         }];
@@ -71,7 +83,7 @@
                                                                                      limit:_messageLimit];
         [self appendMessageModels:[self modelsWithMessages:messages]];
         if (handler) {
-            handler(nil);
+            handler(nil, nil);
         }
     }
 }

@@ -15,6 +15,7 @@
 
 @interface NIMSessionViewController : UIViewController<NIMSessionInteractorDelegate,NIMInputActionDelegate,NIMMessageCellDelegate,NIMChatManagerDelegate,NIMConversationManagerDelegate>
 
+
 @property (nonatomic, strong)  UITableView *tableView;
 
 @property (nonatomic,strong)   UIRefreshControl *refreshControl;
@@ -23,7 +24,7 @@
 
 @property (nonatomic, strong)  NIMSession *session;
 
-
+@property(nonatomic, assign) NSInteger sendMemberType;
 
 
 /**
@@ -141,5 +142,7 @@
  *  @discussion 不会触发 DB 操作，请手动调用 SDK 里 updateMessage:forSession:completion: 接口
  */
 - (void)uiUpdateMessage:(NIMMessage *)message;
+
+- (void)onTapMediaItemPicture:(NIMMediaItem *)item;
 
 @end

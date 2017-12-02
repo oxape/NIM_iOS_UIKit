@@ -21,4 +21,6 @@
 
 @property(nonatomic,strong) id<NIMSessionLayout>     layout;
 
+@property(nonatomic, assign) NSInteger sendMemberType;
+
 @end

@@ -120,7 +120,15 @@
 }
 
 - (void)resetMessages:(void(^)(NSError *error))handler{
-    [self.dataSource resetMessages:handler];
+    __weak typeof(self) wself = self;
+    [self.dataSource resetMessages:^(NSError *error, NSArray<NIMMessage *> *messages) {
+        if (handler) {
+            handler(error);
+        }
+        if (messages.count) {
+            [wself checkAttachmentState:messages];
+        }
+    }];
 }
 
 - (void)loadHistoryMessagesWithComplete:(void(^)(NSInteger index, NSArray *messages , NSError *error))handler{

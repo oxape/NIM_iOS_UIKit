@@ -9,6 +9,7 @@
 #import "NIMContactSelectTabView.h"
 #import "NIMContactPickedView.h"
 #import "UIView+NIM.h"
+#import "Masonry.h"
 
 @implementation NIMContactSelectTabView
 
@@ -26,18 +27,21 @@
         _doneButton.nim_size = doneButtonNormal.size;
         [self addSubview:_doneButton];
         self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"contact_bg.png"]];
+        
+        [_pickedView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.top.bottom.equalTo(self);
+        }];
+        [_doneButton mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.right.equalTo(self);
+            make.centerY.equalTo(self);
+            make.left.equalTo(_pickedView.mas_right);
+        }];
     }
     return self;
 }
 
 - (void)layoutSubviews{
     [super layoutSubviews];
-    CGFloat spacing = 15.f;
-    _pickedView.nim_height  = self.nim_height;
-    _pickedView.nim_width   = self.nim_width - _doneButton.nim_width - spacing;
-    CGFloat doneButtonRight = 15.f;
-    _doneButton.nim_right   = self.nim_width - doneButtonRight;
-    _doneButton.nim_centerY = self.nim_height * .5f;
 }
 
 @end

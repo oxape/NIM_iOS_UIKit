@@ -11,6 +11,7 @@
 #import "NIMInputMoreContainerView.h"
 #import "NIMInputEmoticonContainerView.h"
 #import "NIMInputAudioRecordIndicatorView.h"
+#import "NIMInputVoiceContainerView.h"
 #import "UIView+NIM.h"
 #import "NIMInputEmoticonDefine.h"
 #import "NIMInputEmoticonManager.h"
@@ -36,7 +37,6 @@
 @property (nonatomic, weak) id<NIMSessionConfig> inputConfig;
 @property (nonatomic, weak) id<NIMInputDelegate> inputDelegate;
 @property (nonatomic, weak) id<NIMInputActionDelegate> actionDelegate;
-@property (nonatomic, strong) NIMInputAtCache *atCache;
 
 @property (nonatomic, assign) NIMInputStatus status;
 @property (nonatomic, assign) CGFloat containerHeight;
@@ -104,7 +104,7 @@
     [self.toolBar update:_inputType];
     switch (status) {
         case NIMInputStatusText:
-        case NIMInputStatusAudio:{
+        {
             if (self.toolBar.showsKeyboard) {
                 self.nim_top = self.keyBoardFrameTop - self.toolBar.nim_height;
             }else{
@@ -112,8 +112,17 @@
             }
             break;
         }
+        case NIMInputStatusDown:{
+            if (self.toolBar.showsKeyboard) {
+                self.toolBar.showsKeyboard = NO;
+            }else{
+                self.nim_top = self.superview.nim_height - self.toolBar.nim_height;
+            }
+            break;
+        }
         case NIMInputStatusMore:
         case NIMInputStatusEmoticon:
+        case NIMInputStatusVoice:
             self.nim_bottom = self.superview.nim_height;
             break;
         default:
@@ -177,17 +186,19 @@
         
         _toolBar.delegate = self;
         [_toolBar.emoticonBtn addTarget:self action:@selector(onTouchEmoticonBtn:) forControlEvents:UIControlEventTouchUpInside];
-        [_toolBar.moreMediaBtn addTarget:self action:@selector(onTouchMoreBtn:) forControlEvents:UIControlEventTouchUpInside];
         [_toolBar.voiceBtn addTarget:self action:@selector(onTouchVoiceBtn:) forControlEvents:UIControlEventTouchUpInside];
-        [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnDown:) forControlEvents:UIControlEventTouchDown];
-        [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnDragInside:) forControlEvents:UIControlEventTouchDragInside];
-        [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnDragOutside:) forControlEvents:UIControlEventTouchDragOutside];
-        [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnUpInside:) forControlEvents:UIControlEventTouchUpInside];
-        [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
+        [_toolBar.photoBtn addTarget:self action:@selector(onTouchPhotoBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [_toolBar.voteBtn addTarget:self action:@selector(onTouchVoteBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [_toolBar.shotBtn addTarget:self action:@selector(onTouchShotBtn:) forControlEvents:UIControlEventTouchUpInside];
         _toolBar.nim_size = [_toolBar sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
         _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [_toolBar.recordButton setTitle:@"按住说话" forState:UIControlStateNormal];
-        [_toolBar.recordButton setHidden:YES];
+        
+        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDown:) forControlEvents:UIControlEventTouchDown];
+        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDragInside:) forControlEvents:UIControlEventTouchDragInside];
+        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDragOutside:) forControlEvents:UIControlEventTouchDragOutside];
+        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnUpInside:) forControlEvents:UIControlEventTouchUpInside];
+        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
+        [self.voiceContainer.recordButton setTitle:@"按住说话" forState:UIControlStateNormal];
         
         //设置最大输入字数
         NSInteger textInputLength = [NIMKitUIConfig sharedConfig].globalConfig.maxLength;
@@ -227,7 +238,15 @@
     return _emoticonContainer;
 }
 
-
+- (NIMInputVoiceContainerView *)voiceContainer {
+    if (!_voiceContainer) {
+        _voiceContainer = [[NIMInputVoiceContainerView alloc] initWithFrame:CGRectMake(0,0,
+                                                                                       self.nim_width, _containerHeight)];
+        _voiceContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:_voiceContainer];
+    }
+    return _voiceContainer;
+}
 
 - (void)dealloc
 {
@@ -317,50 +336,10 @@
     [super layoutSubviews];
     self.moreContainer.nim_top     = self.toolBar.nim_bottom;
     self.emoticonContainer.nim_top = self.toolBar.nim_bottom;
+    self.voiceContainer.nim_top = self.toolBar.nim_bottom;
 }
-
 
 #pragma mark - button actions
-- (void)onTouchVoiceBtn:(id)sender {
-    // image change
-    if (_inputType!= InputTypeAudio) {
-        __weak typeof(self) weakSelf = self;
-        if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(requestRecordPermission:)]) {
-            [[AVAudioSession sharedInstance] performSelector:@selector(requestRecordPermission:) withObject:^(BOOL granted) {
-                if (granted) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        _inputType = InputTypeAudio;
-                        if (weakSelf.toolBar.showsKeyboard) {
-                            weakSelf.status = NIMInputStatusAudio;
-                            weakSelf.toolBar.showsKeyboard = NO;
-                        }else{
-                            [weakSelf refreshStatus:NIMInputStatusAudio];
-                            [weakSelf callDidChangeHeight];
-                        }
-                    });
-                }
-                else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [[[UIAlertView alloc] initWithTitle:nil
-                                                    message:@"没有麦克风权限"
-                                                   delegate:nil
-                                          cancelButtonTitle:@"确定"
-                                          otherButtonTitles:nil] show];
-                    });
-                }
-            }];
-        }
-    }
-    else
-    {
-        if ([self.toolBar.inputBarItemTypes containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
-            _inputType = InputTypeText;
-            self.status = NIMInputStatusText;
-            self.toolBar.showsKeyboard = YES;
-        }
-    }
-}
-
 - (IBAction)onTouchRecordBtnDown:(id)sender {
     self.recordPhase = AudioRecordPhaseStart;
 }
@@ -382,6 +361,55 @@
     self.recordPhase = AudioRecordPhaseCancelling;
 }
 
+- (void)onTouchVoiceBtn:(id)sender {
+    if (_inputType != InputTypeVoice) {
+        __weak typeof(self) weakSelf = self;
+        if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(requestRecordPermission:)]) {
+            [[AVAudioSession sharedInstance] performSelector:@selector(requestRecordPermission:) withObject:^(BOOL granted) {
+                if (granted) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        _inputType = InputTypeVoice;
+                        [self bringSubviewToFront:_voiceContainer];
+                        [self.voiceContainer setHidden:NO];
+                        [self.emoticonContainer setHidden:YES];
+                        [self.moreContainer setHidden:YES];
+                        if (self.toolBar.showsKeyboard) {
+                            self.status = NIMInputStatusVoice;
+                            self.toolBar.showsKeyboard = NO;
+                        }
+                        else
+                        {
+                            [self refreshStatus:NIMInputStatusVoice];
+                            [self callDidChangeHeight];
+                        }
+                    });
+                }
+                else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (weakSelf.toolBar.showsKeyboard) {
+                            weakSelf.status = NIMInputStatusDown;
+                            weakSelf.toolBar.showsKeyboard = NO;
+                        }else{
+                            [weakSelf refreshStatus:NIMInputStatusDown];
+                            [weakSelf callDidChangeHeight];
+                        }
+                        [[[UIAlertView alloc] initWithTitle:nil
+                                                    message:@"没有麦克风权限"
+                                                   delegate:nil
+                                          cancelButtonTitle:@"确定"
+                                          otherButtonTitles:nil] show];
+                    });
+                }
+            }];
+        }
+    } else {
+        if ([self.toolBar.inputBarItemTypes containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
+            _inputType = InputTypeText;
+            self.status = NIMInputStatusText;
+            self.toolBar.showsKeyboard = YES;
+        }
+    }
+}
 
 - (void)onTouchEmoticonBtn:(id)sender
 {
@@ -389,6 +417,7 @@
         _inputType = InputTypeEmot;
         [self bringSubviewToFront:_emoticonContainer];
         [self.emoticonContainer setHidden:NO];
+        [self.voiceContainer setHidden:YES];
         [self.moreContainer setHidden:YES];
         if (self.toolBar.showsKeyboard) {
             self.status = NIMInputStatusEmoticon;
@@ -415,6 +444,7 @@
         _inputType = InputTypeMedia;
         [self bringSubviewToFront:self.moreContainer];
         [self.moreContainer setHidden:NO];
+        [self.voiceContainer setHidden:YES];
         [self.emoticonContainer setHidden:YES];
         if (self.toolBar.showsKeyboard) {
             self.status = NIMInputStatusMore;
@@ -431,6 +461,36 @@
         _inputType = InputTypeText;
         self.status = NIMInputStatusText;
         self.toolBar.showsKeyboard = YES;
+    }
+}
+
+- (void)onTouchPhotoBtn:(id)sender {
+    NIMMediaItem *item = [NIMMediaItem item:@"onTapMediaItemPicture:"
+                                normalImage:[UIImage nim_imageInKit:@"bk_media_picture_normal"]
+                              selectedImage:[UIImage nim_imageInKit:@"bk_media_picture_nomal_pressed"]
+                                      title:@"相册"];
+    if ([self.actionDelegate respondsToSelector:@selector(onTapMediaItem:)]) {
+        [self.actionDelegate onTapMediaItem:item];
+    }
+}
+
+- (void)onTouchVoteBtn:(id)sender {
+    NIMMediaItem *item = [NIMMediaItem item:@"onTapMediaItemVote:"
+                                normalImage:[UIImage nim_imageInKit:@"bk_media_picture_normal"]
+                              selectedImage:[UIImage nim_imageInKit:@"bk_media_picture_nomal_pressed"]
+                                      title:@"相册"];
+    if ([self.actionDelegate respondsToSelector:@selector(onTapMediaItem:)]) {
+        [self.actionDelegate onTapMediaItem:item];
+    }
+}
+
+- (void)onTouchShotBtn:(id)sender {
+    NIMMediaItem *item = [NIMMediaItem item:@"onTapMediaItemShot:"
+                                normalImage:[UIImage nim_imageInKit:@"bk_media_picture_normal"]
+                              selectedImage:[UIImage nim_imageInKit:@"bk_media_picture_nomal_pressed"]
+                                      title:@"相册"];
+    if ([self.actionDelegate respondsToSelector:@selector(onTapMediaItem:)]) {
+        [self.actionDelegate onTapMediaItem:item];
     }
 }
 
@@ -458,6 +518,9 @@
 {
     _inputType = InputTypeText;
     self.status = NIMInputStatusText;
+    if ([self.actionDelegate respondsToSelector:@selector(inputViewShouldBeginEditing)]) {
+        return [self.actionDelegate inputViewShouldBeginEditing];
+    }
     return YES;
 }
 
@@ -468,8 +531,8 @@
         return NO;
     }
     if ([text isEqualToString:@""] && range.length == 1 ) {//非选择删除
-        [self onTextDelete];
-        return NO;
+        if ([self onTextDelete])
+            return NO;
     }
     if ([text isEqualToString:NIMInputAtStartChar] && self.session.sessionType == NIMSessionTypeTeam) {
         NIMContactTeamMemberSelectConfig *config = [[NIMContactTeamMemberSelectConfig alloc] init];
@@ -479,7 +542,7 @@
         NIMContactSelectViewController *vc = [[NIMContactSelectViewController alloc] initWithConfig:config];
         vc.delegate = self;
         dispatch_async(dispatch_get_main_queue(), ^{
-           [vc show];
+            [vc show];
         });
         
     }
@@ -561,7 +624,7 @@
 
 
 
-- (void)onTextDelete
+- (BOOL)onTextDelete
 {
     NSRange range = [self delRangeForEmoticon];
     if (range.length == 1) {
@@ -569,9 +632,13 @@
         NIMInputAtItem *item = [self delRangeForAt];
         if (item) {
             range = item.range;
+            [self.toolBar deleteText:range];
+            return YES;
         }
+    } else if (range.length > 0) {
+        [self.toolBar deleteText:range];
     }
-    [self.toolBar deleteText:range];
+    return NO;
 }
 
 - (NSRange)delRangeForEmoticon

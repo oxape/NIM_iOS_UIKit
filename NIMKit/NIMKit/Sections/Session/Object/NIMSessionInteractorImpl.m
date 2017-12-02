@@ -71,11 +71,14 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
 
 - (void)addMessages:(NSArray *)messages
 {
-    NIMMessage *message = messages.firstObject;
+    NSMutableArray *filterMessages = [messages mutableCopy];
+    for (NIMMessage *message in messages) {
+    }
+    NIMMessage *message = filterMessages.firstObject;
     if (message.session.sessionType == NIMSessionTypeChatroom) {
-        [self addChatroomMessages:messages];
+        [self addChatroomMessages:filterMessages];
     }else{
-        [self addNormalMessages:messages];
+        [self addNormalMessages:filterMessages];
     }
 }
 
@@ -329,10 +332,16 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
             {
                 for (UIImage *image in images) {
                     NIMMessage *message = [NIMMessageMaker msgWithImage:image];
+                    if (self.sendMemberType != NSNotFound) {
+                        message.remoteExt = @{@"type": @(self.sendMemberType)};
+                    }
                     [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:weakSelf.session error:nil];
                 }
                 if (path) {
                     NIMMessage *message = [NIMMessageMaker msgWithImagePath:path];
+                    if (self.sendMemberType != NSNotFound) {
+                        message.remoteExt = @{@"type": @(self.sendMemberType)};
+                    }
                     [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:weakSelf.session error:nil];
                 }
             }
@@ -340,6 +349,9 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
             case PHAssetMediaTypeVideo:
             {
                 NIMMessage *message = [NIMMessageMaker msgWithVideo:path];
+                if (self.sendMemberType != NSNotFound) {
+                    message.remoteExt = @{@"type": @(self.sendMemberType)};
+                }
                 [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:weakSelf.session error:nil];
             }
                 break;

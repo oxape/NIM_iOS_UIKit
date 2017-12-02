@@ -34,7 +34,7 @@
 - (instancetype)init{
     self = [super init];
     if (self) {
-        _defaultUserAvatar = [UIImage imageNamed:@"avatar_user"];
+        _defaultUserAvatar = [UIImage imageNamed:@"user-avatar"];
         _defaultTeamAvatar = [UIImage imageNamed:@"avatar_team"];
         _request = [[NIMKitDataRequest alloc] init];
         _request.maxMergeCount = 20;

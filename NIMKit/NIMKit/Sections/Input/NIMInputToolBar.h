@@ -11,8 +11,8 @@
 typedef NS_ENUM(NSInteger, NIMInputType){
     InputTypeText = 1,
     InputTypeEmot = 2,
-    InputTypeAudio = 3,
     InputTypeMedia = 4,
+    InputTypeVoice= 5,
 };
 
 @protocol NIMInputToolBarDelegate <NSObject>
@@ -40,9 +40,13 @@ typedef NS_ENUM(NSInteger, NIMInputType){
 
 @property (nonatomic,strong) UIButton    *emoticonBtn;
 
-@property (nonatomic,strong) UIButton    *moreMediaBtn;
+@property (nonatomic,strong) UIButton    *photoBtn;
 
-@property (nonatomic,strong) UIButton    *recordButton;
+@property (nonatomic,strong) UIButton    *voteBtn;
+
+@property (nonatomic,strong) UIButton    *shotBtn;
+
+@property (nonatomic,strong) UIButton    *moreMediaBtn;
 
 @property (nonatomic,strong) UIImageView *inputTextBkgImage;
 

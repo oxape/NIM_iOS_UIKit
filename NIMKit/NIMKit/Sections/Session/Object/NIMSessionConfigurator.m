@@ -69,7 +69,8 @@
     _interactor.delegate                 = vc;
     _interactor.dataSource               = datasource;
     _interactor.layout                   = layout;
-    
+    _interactor.sendMemberType = vc.sendMemberType;
+
     _tableAdapter = [[NIMSessionTableAdapter alloc] init];
     _tableAdapter.interactor = _interactor;
     _tableAdapter.delegate   = vc;
