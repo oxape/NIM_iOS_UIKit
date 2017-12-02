@@ -23,5 +23,8 @@
 + (BOOL)canEditTeamInfo:(NIMTeamMember *)member;
 
 + (BOOL)canInviteMember:(NIMTeamMember *)member;
++ (NSString *)teamNotificationSourceName:(NIMMessage *)message;
++ (NSArray *)teamNotificationTargetNames:(NIMMessage *)message;
++ (NSString *)teamNotificationTeamShowName:(NIMMessage *)message;
 
 @end

@@ -1,7 +1,8 @@
 platform :ios, '8.0'
 
 target 'DemoApplication' do
-
+  pod 'Masonry'
+  pod 'MJExtension'
   pod 'NIMKit', :path => '../'
 
 end

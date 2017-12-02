@@ -14,6 +14,7 @@
 
 @class NIMInputMoreContainerView;
 @class NIMInputEmoticonContainerView;
+@class NIMInputVoiceContainerView;
 
 
 
@@ -23,7 +24,6 @@ typedef NS_ENUM(NSInteger, NIMAudioRecordPhase) {
     AudioRecordPhaseCancelling,
     AudioRecordPhaseEnd
 };
-
 
 
 @protocol NIMInputDelegate <NSObject>
@@ -36,6 +36,8 @@ typedef NS_ENUM(NSInteger, NIMAudioRecordPhase) {
 
 @interface NIMInputView : UIView
 
+@property (nonatomic, strong) NIMInputAtCache *atCache;
+
 @property (nonatomic, strong) NIMSession             *session;
 
 @property (nonatomic, assign) NSInteger              maxTextLength;
@@ -43,11 +45,17 @@ typedef NS_ENUM(NSInteger, NIMAudioRecordPhase) {
 @property (assign, nonatomic, getter=isRecording)    BOOL recording;
 
 @property (strong, nonatomic)  NIMInputToolBar *toolBar;
-@property (strong, nonatomic)  UIView *moreContainer;
-@property (strong, nonatomic)  UIView *emoticonContainer;
+//MODIFY HEAD:NIMKit/NIMKit/Classes/Sections/Input/NIMInputView.h
+//@property (strong, nonatomic)  UIView *moreContainer;
+//@property (strong, nonatomic)  UIView *emoticonContainer;
 
 @property (nonatomic, assign) NIMInputStatus status;
-@property (nonatomic, strong) NIMInputAtCache *atCache;
+//@property (nonatomic, strong) NIMInputAtCache *atCache;
+//=======
+@property (strong, nonatomic) NIMInputMoreContainerView *moreContainer;
+@property (strong, nonatomic)  NIMInputEmoticonContainerView *emoticonContainer;
+@property (strong, nonatomic)  NIMInputVoiceContainerView *voiceContainer;
+//>>>>>>> v1.2.0:NIMKit/NIMKit/Sections/Input/NIMInputView.h
 
 - (instancetype)initWithFrame:(CGRect)frame
                        config:(id<NIMSessionConfig>)config;

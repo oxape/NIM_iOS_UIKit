@@ -67,6 +67,25 @@
 
 - (void)refresh:(NIMMessageModel *)data{
     [super refresh:data];
+    
+    UIImage * image;
+    NSArray * animateNames;
+    if ([data.message.from isEqualToString:[NIMSDK sharedSDK].loginManager.currentAccount]) {
+        image = [UIImage nim_imageInKit:@"icon_receiver_voice_playing_revert.png"];
+        animateNames = @[@"icon_receiver_voice_playing_001_revert.png",@"icon_receiver_voice_playing_002_revert.png",@"icon_receiver_voice_playing_003_revert.png"];
+    } else {
+        image = [UIImage nim_imageInKit:@"icon_receiver_voice_playing.png"];
+        animateNames = @[@"icon_receiver_voice_playing_001.png",@"icon_receiver_voice_playing_002.png",@"icon_receiver_voice_playing_003.png"];
+    }
+    _voiceImageView.image = image;
+    NSMutableArray * animationImages = [[NSMutableArray alloc] initWithCapacity:animateNames.count];
+    for (NSString * animateName in animateNames) {
+        UIImage * animateImage = [UIImage nim_imageInKit:animateName];
+        [animationImages addObject:animateImage];
+    }
+    _voiceImageView.animationImages = animationImages;
+    _voiceImageView.animationDuration = 1.0;
+    
     NIMAudioObject *object = self.model.message.messageObject;
     self.durationLabel.text = [NSString stringWithFormat:@"%zd\"",(object.duration+500)/1000];//四舍五入
     
@@ -114,7 +133,12 @@
         event.eventName = NIMKitEventNameTapAudio;
         event.messageModel = self.model;
         [self.delegate onCatchEvent:event];
-
+    }
+    if ([self.model.message attachmentDownloadState] == NIMMessageAttachmentDownloadStateNeedDownload) {
+        if (self.audioUIDelegate && [self.audioUIDelegate respondsToSelector:@selector(retryDownloadMsg)]) {
+            [self.audioUIDelegate retryDownloadMsg];
+        }
+        return;
     }
 }
 
@@ -143,6 +167,5 @@
 {
     return [NIMKitAudioCenter instance].currentPlayingMessage == self.model.message; //对比是否是同一条消息，严格同一条，不能是相同ID，防止进了会话又进云端消息界面，导致同一个ID的云消息也在动画
 }
-
 
 @end

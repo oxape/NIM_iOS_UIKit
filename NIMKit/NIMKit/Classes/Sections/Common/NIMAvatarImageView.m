@@ -140,7 +140,7 @@ CGRect NIMKit_CGRectWithCenterAndSize(CGPoint center, CGSize size){
         info = [[NIMKit sharedKit] infoByUser:session.sessionId option:option];
     }
     NSURL *url = info.avatarUrlString ? [NSURL URLWithString:info.avatarUrlString] : nil;
-    [self nim_setImageWithURL:url placeholderImage:info.avatarImage];
+    [self nim_setImageWithURL:url placeholderImage:[UIImage imageNamed:@"teamAvatar"]];
 }
 
 - (void)setAvatarByMessage:(NIMMessage *)message

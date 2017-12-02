@@ -15,12 +15,19 @@
 
 @interface NIMSessionViewController : UIViewController<NIMSessionInteractorDelegate,NIMInputActionDelegate,NIMMessageCellDelegate,NIMChatManagerDelegate,NIMConversationManagerDelegate>
 
+
 @property (nonatomic, strong)  UITableView *tableView;
 
 @property (nonatomic, strong)  NIMInputView *sessionInputView;
 
 @property (nonatomic, strong)  NIMSession *session;
 
+//MODIFY HEAD:NIMKit/NIMKit/Classes/Sections/Session/ViewController/NIMSessionViewController.h
+//=======
+@property(nonatomic, assign) NSInteger sendMemberType;
+
+
+//>>>>>>> v1.2.0:NIMKit/NIMKit/Sections/Session/ViewController/NIMSessionViewController.h
 /**
  *  当前当初的菜单所关联的消息
  *
@@ -165,5 +172,7 @@
  *  @discussion 不会触发 DB 操作，请手动调用 SDK 里 updateMessage:forSession:completion: 接口
  */
 - (void)uiUpdateMessage:(NIMMessage *)message;
+
+- (void)onTapMediaItemPicture:(NIMMediaItem *)item;
 
 @end

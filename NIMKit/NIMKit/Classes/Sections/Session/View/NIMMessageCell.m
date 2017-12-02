@@ -6,6 +6,7 @@
 //  Copyright (c) 2015年 NetEase. All rights reserved.
 //
 
+#import "MJExtension.h"
 #import "NIMMessageCell.h"
 #import "NIMMessageModel.h"
 #import "NIMAvatarImageView.h"
@@ -137,10 +138,47 @@
     if([self needShowNickName])
     {
         NSString *nick = [NIMKitUtil showNick:self.model.message.from inMessage:self.model.message];
-        [self.nameLabel setText:nick];
+        NSString *prefix = @"";
+        if (self.model.message.remoteExt && self.model.message.session.sessionType == NIMSessionTypeChatroom) {
+            NSNumber *type = [self.model.message.remoteExt objectForKey:@"type"];
+            if (type) {
+                switch ([type integerValue]) {
+                    case NIMChatroomMemberTypeNormal:
+                        prefix = @"【嘉宾】";
+                        break;
+                    case NIMChatroomMemberTypeManager:
+                        prefix = @"【助理】";
+                        break;
+                    case NIMChatroomMemberTypeCreator:
+                        prefix = @"【助理】";
+                    default:
+                        break;
+                }
+            }
+        } else if (self.model.message.remoteExt && self.model.message.session.sessionType == NIMSessionTypeTeam) {
+            NSNumber *type = [self.model.message.remoteExt objectForKey:@"type"];
+            if (type) {
+                switch ([type integerValue]) {
+                    case NIMTeamMemberTypeOwner:
+                        prefix = @"【创建者】";
+                        break;
+                    case NIMTeamMemberTypeManager:
+                        prefix = @"【管理员】";
+                        break;
+                    case NIMTeamMemberTypeNormal:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        nick = [prefix stringByAppendingString:nick];
+        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:nick];
+        [attributedString setAttributes:@{NSForegroundColorAttributeName: [UIColor darkGrayColor], NSFontAttributeName: [UIFont systemFontOfSize:13]} range:NSMakeRange(0, nick.length)];
+        [attributedString setAttributes:@{NSForegroundColorAttributeName: [UIColor colorWithRed:0.99 green:0.61 blue:0.18 alpha:1.00], NSFontAttributeName: [UIFont systemFontOfSize:13]} range:NSMakeRange(0, prefix.length)];
+        [self.nameLabel setAttributedText:attributedString];
     }
     [_nameLabel setHidden:![self needShowNickName]];
-    
     
     [_bubbleView refresh:self.model];
     [_bubbleView setNeedsLayout];

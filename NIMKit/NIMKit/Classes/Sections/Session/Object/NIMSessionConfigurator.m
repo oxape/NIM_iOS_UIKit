@@ -71,9 +71,14 @@
     _interactor.delegate                 = vc;
     _interactor.dataSource               = datasource;
     _interactor.layout                   = layout;
+//MODIFY HEAD:NIMKit/NIMKit/Classes/Sections/Session/Object/NIMSessionConfigurator.m
     
     [layout setDelegate:_interactor];
     
+//=======
+    _interactor.sendMemberType = vc.sendMemberType;
+
+//>>>>>>> v1.2.0:NIMKit/NIMKit/Sections/Session/Object/NIMSessionConfigurator.m
     _tableAdapter = [[NIMSessionTableAdapter alloc] init];
     _tableAdapter.interactor = _interactor;
     _tableAdapter.delegate   = vc;

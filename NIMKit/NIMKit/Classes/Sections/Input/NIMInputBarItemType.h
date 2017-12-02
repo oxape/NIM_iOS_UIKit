@@ -14,6 +14,9 @@ typedef NS_ENUM(NSInteger,NIMInputBarItemType){
     NIMInputBarItemTypeTextAndRecord, //文本输入框或录音按钮
     NIMInputBarItemTypeEmoticon,      //表情贴图
     NIMInputBarItemTypeMore,          //更多菜单
+    NIMInputBarItemTypePhoto,
+    NIMInputBarItemTypeVote,
+    NIMInputBarItemTypeShot,
 };
 
 

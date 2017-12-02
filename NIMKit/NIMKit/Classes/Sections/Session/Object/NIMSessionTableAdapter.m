@@ -84,7 +84,12 @@
     }
     else if ([modelInArray isKindOfClass:[NIMTimestampModel class]])
     {
+//MODIFY HEAD:NIMKit/NIMKit/Classes/Sections/Session/Object/NIMSessionTableAdapter.m
         cellHeight = [(NIMTimestampModel *)modelInArray height];
+//=======
+//        NIMTimestampModel *timestampModel = (NIMTimestampModel *)modelInArray;
+//        cellHeight = [timestampModel height];
+//>>>>>>> v1.2.0:NIMKit/NIMKit/Sections/Session/Object/NIMSessionTableAdapter.m
     }
     else
     {

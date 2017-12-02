@@ -29,7 +29,12 @@
 {
     [super refresh:model];
     self.label.text = [NIMKitUtil messageTipContent:model.message];
+//<MODIFY HEAD:NIMKit/NIMKit/Classes/Sections/Session/View/SessionContentView/NIMSessionNotificationContentView.m
     NIMKitSetting *setting = [[NIMKit sharedKit].config setting:model.message];
+//=======
+//
+//    NIMKitBubbleConfig *config = [[NIMKitUIConfig sharedConfig] bubbleConfig:model.message];
+//>>>>>>> v1.2.0:NIMKit/NIMKit/Sections/Session/View/SessionContentView/NIMSessionNotificationContentView.m
     
     self.label.textColor = setting.textColor;
     self.label.font = setting.font;

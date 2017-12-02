@@ -34,6 +34,7 @@
 @property (nonatomic,strong)  NIMSessionConfigurator *configurator;
 
 @property (nonatomic,weak)    id<NIMSessionInteractor> interactor;
+@property (nonatomic, assign) BOOL notFirst;
 
 @end
 
@@ -42,6 +43,7 @@
 - (instancetype)initWithSession:(NIMSession *)session{
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        self.sendMemberType = NSNotFound;
         _session = session;
     }
     return self;
@@ -143,14 +145,28 @@
     [self.sessionInputView endEditing:YES];
 }
 
-
-- (void)viewDidLayoutSubviews
-{
-    [self changeLeftBarBadge:self.conversationManager.allUnreadCount];
+- (void)viewDidLayoutSubviews{
+//    [self changeLeftBarBadge:self.conversationManager.allUnreadCount];
     [self.interactor resetLayout];
 }
 
-
+- (void)headerRereshing:(id)sender
+{
+    __weak typeof(self) wself = self;
+    [self.interactor loadMessages:^(NSArray *messages, NSError *error) {
+//        [wself.refreshControl endRefreshing];
+        if (messages.count) {
+            [wself uiCheckReceipt];
+            if (!self.notFirst) {
+                self.notFirst = YES;
+//                for (NIMMessage *message in messages) {
+//                    [[[NIMSDK sharedSDK] chatManager] fetchMessageAttachment:message
+//                                                                       error:nil];
+//                }
+            }
+        }
+    }];
+}
 
 #pragma mark - 消息收发接口
 - (void)sendMessage:(NIMMessage *)message
@@ -314,7 +330,7 @@
     if ([recentSession.session isEqual:self.session]) {
         return;
     }
-    [self changeLeftBarBadge:totalUnreadCount];
+//    [self changeLeftBarBadge:totalUnreadCount];
 }
 
 #pragma mark - NIMMediaManagerDelegate
@@ -602,8 +618,8 @@
         [items addObject:[[UIMenuItem alloc] initWithTitle:@"复制"
                                                     action:@selector(copyText:)]];
     }
-    [items addObject:[[UIMenuItem alloc] initWithTitle:@"删除"
-                                                action:@selector(deleteMsg:)]];
+//    [items addObject:[[UIMenuItem alloc] initWithTitle:@"删除"
+//                                                action:@selector(deleteMsg:)]];
     return items;
     
 }
@@ -629,10 +645,10 @@
     return NO;
 }
 
-
 - (void)copyText:(id)sender
 {
     NIMMessage *message = [self messageForMenu];
+
     if (message.text.length) {
         UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
         [pasteboard setString:message.text];
@@ -753,7 +769,7 @@
 
 - (void)changeLeftBarBadge:(NSInteger)unreadCount
 {
-    NIMCustomLeftBarView *leftBarView = (NIMCustomLeftBarView *)self.navigationItem.leftBarButtonItem.customView;
+    NIMCustomLeftBarView *leftBarView = (NIMCustomLeftBarView *)self.navigationItem.leftBarButtonItems.lastObject.customView;
     leftBarView.badgeView.badgeValue = @(unreadCount).stringValue;
     leftBarView.badgeView.hidden = !unreadCount;
 }

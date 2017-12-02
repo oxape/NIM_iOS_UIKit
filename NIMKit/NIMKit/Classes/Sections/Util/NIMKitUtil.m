@@ -475,7 +475,7 @@
 
 + (NSString *)teamNotificationTeamShowName:(NIMMessage *)message{
     NIMTeam *team = [[NIMSDK sharedSDK].teamManager teamById:message.session.sessionId];
-    NSString *teamName = team.type == NIMTeamTypeNormal ? @"讨论组" : @"群";
+    NSString *teamName = team.type == NIMTeamTypeNormal ? @"组织" : @"组织";
     return teamName;
 }
 
