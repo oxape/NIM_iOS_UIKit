@@ -23,6 +23,7 @@
 #import "NIMKitInfoFetchOption.h"
 #import "NIMKitKeyboardInfo.h"
 #import "NIMInputToolBar.h"
+#import "Masonry.h"
 
 @interface NIMInputView()<NIMInputToolBarDelegate,NIMInputEmoticonProtocol,NIMContactSelectDelegate>
 {
@@ -78,6 +79,9 @@
             break;
         case NIMInputStatusMore:
             containerHeight = _moreContainer.nim_height;
+            break;
+        case NIMInputStatusAudio:
+            containerHeight = _voiceContainer.nim_height;
             break;
         default:
             containerHeight = [NIMKitKeyboardInfo instance].keyboardHeight;
@@ -183,13 +187,6 @@
         _toolBar.nim_size = [_toolBar sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
         _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         
-        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDown:) forControlEvents:UIControlEventTouchDown];
-        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDragInside:) forControlEvents:UIControlEventTouchDragInside];
-        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDragOutside:) forControlEvents:UIControlEventTouchDragOutside];
-        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnUpInside:) forControlEvents:UIControlEventTouchUpInside];
-        [self.voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
-        [self.voiceContainer.recordButton setTitle:@"按住说话" forState:UIControlStateNormal];
-        
         //设置最大输入字数
         NSInteger textInputLength = [NIMKit sharedKit].config.inputMaxLength;
         self.maxTextLength = textInputLength;
@@ -254,10 +251,27 @@
 //=======
 - (NIMInputVoiceContainerView *)voiceContainer {
     if (!_voiceContainer) {
-        _voiceContainer = [[NIMInputVoiceContainerView alloc] initWithFrame:CGRectMake(0,0,
-                                                                                       self.nim_width, _containerHeight)];
-        _voiceContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [self addSubview:_voiceContainer];
+        NIMInputVoiceContainerView *voiceContainer = [[NIMInputVoiceContainerView alloc] initWithFrame:CGRectZero];
+        
+        CGSize size = [voiceContainer sizeThatFits:CGSizeMake(self.nim_width, CGFLOAT_MAX)];
+        voiceContainer.nim_size = size;
+        voiceContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    
+        [voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDown:) forControlEvents:UIControlEventTouchDown];
+        [voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDragInside:) forControlEvents:UIControlEventTouchDragInside];
+        [voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnDragOutside:) forControlEvents:UIControlEventTouchDragOutside];
+        [voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnUpInside:) forControlEvents:UIControlEventTouchUpInside];
+        [voiceContainer.recordButton addTarget:self action:@selector(onTouchRecordBtnUpOutside:) forControlEvents:UIControlEventTouchUpOutside];
+        [voiceContainer.recordButton setTitle:@"按住说话" forState:UIControlStateNormal];
+        [self addSubview:voiceContainer];
+        [voiceContainer mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.bottom.mas_greaterThanOrEqualTo(self);
+            make.size.mas_equalTo(size);
+        }];
+//        _voiceContainer = [[NIMInputVoiceContainerView alloc] initWithFrame:CGRectMake(0,0,
+//                                                                                       self.nim_width, 216)];
+//        voiceContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        _voiceContainer = voiceContainer;
     }
     return _voiceContainer;
 }
@@ -340,7 +354,7 @@
 //=======
 //    self.moreContainer.nim_top     = self.toolBar.nim_bottom;
 //    self.emoticonContainer.nim_top = self.toolBar.nim_bottom;
-    self.voiceContainer.nim_top = self.toolBar.nim_bottom;
+    _voiceContainer.nim_top = self.toolBar.nim_bottom;
 //>>>>>>> v1.2.0:NIMKit/NIMKit/Sections/Input/NIMInputView.m
 }
 
@@ -373,12 +387,17 @@
         if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(requestRecordPermission:)]) {
             [[AVAudioSession sharedInstance] performSelector:@selector(requestRecordPermission:) withObject:^(BOOL granted) {
                 if (granted) {
-                    dispatch_async(dispatch_get_main_queue(), ^{                        [weakSelf refreshStatus:NIMInputStatusAudio];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf bringSubviewToFront:weakSelf.voiceContainer];
+                        [weakSelf.emoticonContainer setHidden:YES];
+                        [weakSelf.voiceContainer setHidden:NO];
+                        [weakSelf.moreContainer setHidden:YES];
+                        [weakSelf refreshStatus:NIMInputStatusAudio];
                         if (weakSelf.toolBar.showsKeyboard)
                         {
                             weakSelf.toolBar.showsKeyboard = NO;
                         }
-                        [self sizeToFit];
+                        [weakSelf sizeToFit];
                     });
                 }
                 else {
