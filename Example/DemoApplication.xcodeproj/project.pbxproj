@@ -211,7 +211,7 @@
 				TargetAttributes = {
 					61F16E721BC567F700ABEE57 = {
 						CreatedOnToolsVersion = 7.0;
-						DevelopmentTeam = 5AZD542DGT;
+						DevelopmentTeam = 2MBCXRJ4S3;
 					};
 				};
 			};
@@ -438,7 +438,7 @@
 			baseConfigurationReference = 01CDF99A96FF160EA80590F1 /* Pods-DemoApplication.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 5AZD542DGT;
+				DEVELOPMENT_TEAM = 2MBCXRJ4S3;
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = DemoApplication/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -447,7 +447,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.demo.DemoApplication;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxape.demo.DemoApplication;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -457,7 +457,7 @@
 			baseConfigurationReference = 96B8D4920413100CF9B6F36D /* Pods-DemoApplication.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 5AZD542DGT;
+				DEVELOPMENT_TEAM = 2MBCXRJ4S3;
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = DemoApplication/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -466,7 +466,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.demo.DemoApplication;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxape.demo.DemoApplication;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
