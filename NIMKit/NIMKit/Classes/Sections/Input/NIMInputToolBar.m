@@ -127,12 +127,12 @@
 {
     CGFloat viewHeight = 0.0f;
 //MODIFY HEAD:NIMKit/NIMKit/Classes/Sections/Input/NIMInputToolBar.m
-    if (self.status == NIMInputStatusAudio) {
-        viewHeight = 54.5;
-    }else{
+//    if (self.status == NIMInputStatusAudio) {
+//        viewHeight = 54.5;
+//    }else{
 //=======
 //
-//    if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
+    if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
 //>>>>>>> v1.2.0:NIMKit/NIMKit/Sections/Input/NIMInputToolBar.m
         //算出 TextView 的宽度
         [self adjustTextViewWidth:size.width];
@@ -296,8 +296,8 @@
     else if(status == NIMInputStatusAudio)
     {
 //        [self.recordButton setHidden:NO];
-        [self.inputTextView setHidden:YES];
-        [self.inputTextBkgImage setHidden:YES];
+        [self.inputTextView setHidden:NO];
+        [self.inputTextBkgImage setHidden:NO];
 //        [self updateVoiceBtnImages:NO];
 //        [self updateEmotAndTextBtnImages:YES];
 //=======
