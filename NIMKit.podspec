@@ -29,6 +29,6 @@ Pod::Spec.new do |s|
     os.dependency 'TZImagePickerController', '~> 1.9.0'  
   end   
 
-  s.default_subspec = 'Lite'  
+  s.default_subspec = 'Full'  
 
 end 
